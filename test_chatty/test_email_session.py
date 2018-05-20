@@ -2,8 +2,8 @@ import imaplib
 import smtplib
 from typing import Tuple
 
-from chatty.email_session import EmailSession, SMTPFactory, IMAPFactory
-from chatty.session_interface import Session
+from chatty.sessions.email import EmailSession, SMTPFactory, IMAPFactory
+from chatty.sessions.interface import Session
 from chatty.types import Handle
 
 from test_chatty.support import get_protocol_test_config, SessionTestCase

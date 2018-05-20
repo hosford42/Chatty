@@ -1,8 +1,8 @@
 from collections import deque
 from threading import Thread, Condition
 
-from chatty.bot_interface import Bot
-from chatty.signals import Signal
+from chatty.bots.interface import Bot
+from chatty.signals.interface import Signal
 
 
 class SynchronizedBot(Bot):

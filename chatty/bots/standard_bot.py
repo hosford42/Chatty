@@ -1,10 +1,10 @@
 from typing import Callable, Optional
 import logging
 
-from chatty.bot_interface import Bot
-from chatty.session_interface import Session
-from chatty.signals import Signal
-from chatty.synchronized_bot import SynchronizedBot
+from chatty.bots.interface import Bot
+from chatty.sessions.interface import Session
+from chatty.signals.interface import Signal
+from chatty.bots.synchronized_bot import SynchronizedBot
 
 
 LOGGER = logging.getLogger(__name__)

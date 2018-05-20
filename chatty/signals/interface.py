@@ -1,5 +1,5 @@
 
-from chatty.signal_metadata import SignalMetaData
+from chatty.signals.metadata import SignalMetaData
 
 
 class Signal:

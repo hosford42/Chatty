@@ -12,10 +12,10 @@ import tzlocal
 from sleekxmpp import ClientXMPP, JID
 
 from chatty.exceptions import OperationNotSupported
-from chatty.messages import Message
-from chatty.session_interface import Session
-from chatty.signal_metadata import SignalMetaData
-from chatty.signals import Signal
+from chatty.signals.messages import Message
+from chatty.sessions.interface import Session
+from chatty.signals.metadata import SignalMetaData
+from chatty.signals.interface import Signal
 from chatty.types import ProtocolConfig, Handle, SignalID
 
 LOGGER = logging.getLogger(__name__)

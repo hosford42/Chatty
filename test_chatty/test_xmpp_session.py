@@ -1,17 +1,10 @@
-from collections import deque
-import getpass
-import time
-import unittest
-from typing import Iterable, Tuple
+from typing import Tuple
 
-from chatty.messages import Message
-from chatty.session_interface import Session
-from chatty.signal_metadata import SignalMetaData
-from chatty.types import Handle, SignalID
-from chatty.standard_bot import make_bot
-from chatty.xmpp_session import XMPPSession
+from chatty.sessions.interface import Session
+from chatty.types import Handle
+from chatty.sessions.xmpp import XMPPSession
 
-from test_chatty.support import assert_same_message, SessionTestCase
+from test_chatty.support import SessionTestCase
 from test_chatty.support import get_protocol_test_config
 
 

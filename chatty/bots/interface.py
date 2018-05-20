@@ -1,13 +1,13 @@
 from abc import ABCMeta, abstractmethod
 
-import chatty.session_interface
-import chatty.signals
+import chatty.sessions.interface
+import chatty.signals.interface
 
 
 class Bot(metaclass=ABCMeta):
     """Abstract interface for bots."""
 
-    def __init__(self, session: 'chatty.session_interface.Session'):
+    def __init__(self, session: 'chatty.sessions.interface.Session'):
         self._session = session
         session.add_bot(self)
 
@@ -15,11 +15,11 @@ class Bot(metaclass=ABCMeta):
         self.close()
 
     @property
-    def session(self) -> 'chatty.session_interface.Session':
+    def session(self) -> 'chatty.sessions.interface.Session':
         return self._session
 
     @session.setter
-    def session(self, value: 'chatty.session_interface.Session') -> None:
+    def session(self, value: 'chatty.sessions.interface.Session') -> None:
         if value != self._session:
             value.add_bot(self)
             self._session.remove_bot(self)
@@ -29,5 +29,5 @@ class Bot(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def receive(self, signal: 'chatty.signals.Signal') -> None:
+    def receive(self, signal: 'chatty.signals.interface.Signal') -> None:
         raise NotImplementedError()

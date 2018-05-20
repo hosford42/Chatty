@@ -1,8 +1,8 @@
 # noinspection PyProtectedMember
 from email.message import MIMEPart
 
-from chatty.signal_metadata import SignalMetaData
-from chatty.signals import Signal
+from chatty.signals.metadata import SignalMetaData
+from chatty.signals.interface import Signal
 
 
 class Message(Signal):

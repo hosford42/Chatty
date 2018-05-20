@@ -6,10 +6,10 @@ from typing import Tuple, Iterable
 import time
 import unittest
 
-from chatty.standard_bot import make_bot
-from chatty.messages import Message
-from chatty.session_interface import Session
-from chatty.signal_metadata import SignalMetaData
+from chatty.bots.standard_bot import make_bot
+from chatty.signals.messages import Message
+from chatty.sessions.interface import Session
+from chatty.signals.metadata import SignalMetaData
 from chatty.support import get_protocol_config
 from chatty.types import ProtocolConfig, Handle
 

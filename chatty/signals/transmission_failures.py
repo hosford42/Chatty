@@ -1,7 +1,7 @@
 from typing import Optional
 
-from chatty.signals import Signal
-from chatty.signal_metadata import SignalMetaData
+from chatty.signals.interface import Signal
+from chatty.signals.metadata import SignalMetaData
 from chatty.types import ErrorCode
 
 
