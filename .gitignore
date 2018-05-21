@@ -1,4 +1,4 @@
-.test_config
+.chatty_test_config
 old_version/
 __pycache__/
 *.py[cod]

@@ -101,21 +101,23 @@ class XMPPSession(Session):
             raise OperationNotSupported("XMPP protocol does not support carbon-copying.")
 
         if signal.meta_data.room:
+            print("Sending message to", signal.meta_data.room)
             self._xmpp_client.send_message(
                 mfrom=origin,
                 mto=signal.meta_data.room,
-                mbody=signal.content,
+                mbody=str(signal.content),
                 mtype='groupchat',
-                mnick=self._xmpp_connection_info.nick
+                mnick=self._xmpp_connection_info.nickname
             )
 
         for recipient in signal.meta_data.addressees:
+            print("Sending message to", recipient)
             self._xmpp_client.send_message(
                 mfrom=origin,
                 mto=recipient,
-                mbody=signal.content,
+                mbody=str(signal.content),
                 mtype='chat',
-                mnick=self._xmpp_connection_info.nick
+                mnick=self._xmpp_connection_info.nickname
             )
 
         self._check_for_thread_errors()
@@ -142,7 +144,7 @@ class XMPPSession(Session):
             ]
 
             # If the bot said it, it shouldn't respond to it.
-            if self._xmpp_connection_info.nick in nicks or self._xmpp_connection_info.handle == origin:
+            if self._xmpp_connection_info.nickname in nicks or self._xmpp_connection_info.handle == origin:
                 LOGGER.debug("Ignoring self-generated message.")
                 return
 
@@ -179,7 +181,7 @@ class XMPPSession(Session):
             ]
 
             # If the bot said it, it shouldn't respond to it.
-            if self._xmpp_connection_info.nick in nicks or self._xmpp_connection_info.handle == origin:
+            if self._xmpp_connection_info.nickname in nicks or self._xmpp_connection_info.handle == origin:
                 LOGGER.debug("Ignoring self-generated message.")
                 return
 

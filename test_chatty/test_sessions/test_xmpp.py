@@ -4,11 +4,17 @@ from chatty.sessions.interface import Session
 from chatty.types import Handle
 from chatty.sessions.xmpp import XMPPSession
 
-from test_chatty.support import SessionTestCase
+from test_chatty.support import BaseClasses
 from test_chatty.support import get_protocol_test_config
 
 
-class TestXMPPSession(SessionTestCase):
+# NOTES:
+# * Prosody.IM is an easy way to setup your own local XMPP test server.
+# * If you are connected to the receiver test account with another client, such as Pidgin, the messages may be
+#   intercepted, causing the tests to fail.
+
+
+class TestXMPPSession(BaseClasses.SessionTestCase):
 
     def setUp(self):
         self.config1 = get_protocol_test_config('XMPP #1', 5222)

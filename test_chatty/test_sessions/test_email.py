@@ -6,10 +6,16 @@ from chatty.sessions.email import EmailSession, SMTPFactory, IMAPFactory
 from chatty.sessions.interface import Session
 from chatty.types import Handle
 
-from test_chatty.support import get_protocol_test_config, SessionTestCase
+from test_chatty.support import get_protocol_test_config, BaseClasses
 
 
-class EmailSessionTestCase(SessionTestCase):
+# NOTES:
+# * To setup your own local test server for email, a good option is to use postfix together with courier and dovecot.
+#   Some useful guides can be found [here](https://notblog.org/install-mail-server/) and
+#   [here](https://gist.github.com/raelgc/6031274).
+
+
+class EmailSessionTestCase(BaseClasses.SessionTestCase):
 
     def setUp(self):
         self.smtp_config = get_protocol_test_config('SMTP', smtplib.SMTP_PORT)
