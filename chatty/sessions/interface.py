@@ -34,6 +34,6 @@ class Session(metaclass=ABCMeta):
         for bot in self._bots:
             # noinspection PyBroadException
             try:
-                bot.receive(signal)
+                bot.receive(self, signal)
             except Exception:
                 LOGGER.exception("Error in Bot.receive().")

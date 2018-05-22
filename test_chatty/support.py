@@ -61,7 +61,8 @@ class BaseClasses:
         def setUp(self):
             self.sender_handle, self.sender_session, self.receiver_handle, self.receiver_session = self.get_session_pair()
             self.received = deque()
-            self.bot = make_bot(self.receiver_session, lambda x: self.received.append(x))
+            self.bot = make_bot(lambda sess, sig: self.received.append(sig))
+            self.receiver_session.add_bot(self.bot)
             time.sleep(self.post_setup_pause)
 
         def tearDown(self):

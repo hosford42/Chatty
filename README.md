@@ -1,22 +1,3 @@
-# TODO:
-
-* Multiple sessions for the same bot
-* Other signal types besides messages
-* Session types:
-    * Direct user-to-bot
-    * Direct bot-to-bot
-    * Pop3 email
-    * Slack
-    * Discord
-    * Telegram
-    * Reddit
-    * Twitter
-    * Facebook
-    * SnapChat
-    * Kik
-    * Others?
-
-
 # Chat
 
 This is a revamp of the server/client chat model from the NPC
