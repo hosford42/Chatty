@@ -1,6 +1,7 @@
 import datetime
 import logging
 import threading
+import time
 from collections import OrderedDict
 
 import tzlocal
@@ -82,7 +83,8 @@ class XMPPSession(Session):
 
     def _check_for_thread_errors(self):
         if self._thread_error and threading.current_thread() == self._main_thread:
-            raise self._thread_error
+            thread_error, self._thread_error = self._thread_error, None
+            raise thread_error
 
     def _notify_thread_error(self, exc: Exception):
         LOGGER.exception("Error in thread: %s" % exc)
@@ -101,7 +103,6 @@ class XMPPSession(Session):
             raise OperationNotSupported("XMPP protocol does not support carbon-copying.")
 
         if signal.meta_data.room:
-            print("Sending message to", signal.meta_data.room)
             self._xmpp_client.send_message(
                 mfrom=origin,
                 mto=signal.meta_data.room,
@@ -111,7 +112,6 @@ class XMPPSession(Session):
             )
 
         for recipient in signal.meta_data.addressees:
-            print("Sending message to", recipient)
             self._xmpp_client.send_message(
                 mfrom=origin,
                 mto=recipient,
@@ -129,6 +129,7 @@ class XMPPSession(Session):
             self._xmpp_client.get_roster()
             self._xmpp_client.send_presence()
         except Exception as exc:
+            LOGGER.exception("Error in on_session_started()")
             self._notify_thread_error(exc)
 
     def on_message(self, message):
@@ -166,6 +167,7 @@ class XMPPSession(Session):
             message = Message(meta_data, message['body'])
             self.receive(message)
         except Exception as exc:
+            LOGGER.exception("Error in on_message()")
             self._notify_thread_error(exc)
 
     def on_group_chat_message(self, message):
@@ -212,6 +214,7 @@ class XMPPSession(Session):
             message = Message(meta_data, message['body'])
             self.receive(message)
         except Exception as exc:
+            LOGGER.exception("Error in on_group_chat_message()")
             self._notify_thread_error(exc)
 
     # noinspection PyUnusedLocal
@@ -220,6 +223,7 @@ class XMPPSession(Session):
             LOGGER.critical("Authentication failed.")
             self.close()
         except Exception as exc:
+            LOGGER.exception("Error in on_failed_authentication()")
             self._notify_thread_error(exc)
 
 

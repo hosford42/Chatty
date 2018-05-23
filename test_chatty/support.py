@@ -84,4 +84,4 @@ class BaseClasses:
                         break
                 else:
                     assert_same_message(message, self.received.popleft())
-                print("Message #%s successful." % index)
+                print("%s message #%s successful." % (type(self).__name__, index))
