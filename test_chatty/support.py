@@ -2,14 +2,16 @@ from abc import abstractmethod, ABCMeta
 from collections import deque
 # noinspection PyProtectedMember
 from email.message import MIMEPart
-from typing import Tuple, Iterable
+from typing import Tuple, Iterable, Deque
 import os
 import time
 import unittest
 
-from chatty.bots.standard_bot import make_bot
+from chatty.bots.interface import Bot
+from chatty.bots.standard import make_bot
 from chatty.signals.message import Message
 from chatty.sessions.interface import Session
+from chatty.signals.interface import Signal
 from chatty.signals.metadata import SignalMetaData
 from chatty.support import get_protocol_config
 from chatty.types import ProtocolConfig, Handle
@@ -58,11 +60,14 @@ class BaseClasses:
             for counter in range(10):
                 yield SignalMetaData(origin=self.sender_handle, addressees=[self.receiver_handle])
 
+        def get_bot(self) -> Bot:
+            return make_bot(lambda sess, sig: self.received.append(sig))
+
         def setUp(self):
             self.sender_handle, self.sender_session, self.receiver_handle, self.receiver_session = \
                 self.get_session_pair()
             self.received = deque()
-            self.bot = make_bot(lambda sess, sig: self.received.append(sig))
+            self.bot = self.get_bot()
             self.receiver_session.add_bot(self.bot)
             time.sleep(self.post_setup_pause)
 
@@ -70,6 +75,7 @@ class BaseClasses:
             self.bot.close()
             self.sender_session.close()
             self.receiver_session.close()
+            assert not self.received
 
         def test(self):
             for index, meta_data in enumerate(self.meta_data_sequence()):

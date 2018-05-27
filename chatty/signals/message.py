@@ -1,3 +1,4 @@
+from typing import Union
 # noinspection PyProtectedMember
 from email.message import MIMEPart
 
@@ -7,12 +8,12 @@ from chatty.signals.interface import Signal
 
 class Message(Signal):
 
-    def __init__(self, meta_data: SignalMetaData, content: MIMEPart):
+    def __init__(self, meta_data: SignalMetaData, content: Union[str, MIMEPart]):
         super().__init__(meta_data)
         self._content = content
 
     @property
-    def content(self) -> MIMEPart:
+    def content(self) -> Union[str, MIMEPart]:
         return self._content
 
     def __eq__(self, other: 'Message') -> bool:

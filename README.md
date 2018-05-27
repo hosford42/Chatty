@@ -2,6 +2,7 @@
 
 *A multi-platform chat bot framework*
 
+
 ## Description
 
 Chatty is a Python 3 package designed to map any chat platform to the same
@@ -41,14 +42,14 @@ make your code available under the [license] governing this project.
 The design of Chatty is object-oriented, and centers around 3 core 
 abstractions:
 
-* **Signal**: A signal is any single indivisible element of communication,
+* **Signals**: A signal is any single indivisible element of communication,
   such as a message or a notification, which may or may not contain
   content or data of some sort. Signals always come with certain attached
   *metadata* which determines where the signal originated, who it was
   sent to, when it was sent, etc.
-* **Bot**: A bot is an endpoint where inbound signals are handled, and
+* **Bots**: A bot is an endpoint where inbound signals are handled, and
   outbound signals are generated.
-* **Session**: A session is an open channel over which signals can be
+* **Sessions**: A session is an open channel over which signals can be
   sent and/or received.
 
 By default, signals arrive and are sent asynchronously. The 
