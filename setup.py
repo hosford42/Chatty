@@ -13,7 +13,8 @@ setup(
         'tzlocal',  # MIT
     ],
     extras_require={
-        'xmpp': ['sleekxmpp>=1.3', 'dnspython>=1.15'],
         'slack': ['slackclient>=1.2'],
+        'tkinter': ['tkinter>=8.6'],
+        'xmpp': ['sleekxmpp>=1.3', 'dnspython>=1.15'],
     }
 )
