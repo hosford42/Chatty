@@ -14,7 +14,7 @@ def get_long_description():
 
 setup(
     name='Chatty',
-    version='0.0.1',
+    version='0.0.2',
     packages=find_packages(),
     url='https://github.com/hosford42/Chatty',
     download_url='https://pypi.org/project/Chatty',
@@ -23,6 +23,7 @@ setup(
     author_email='hosford42@gmail.com',
     description='A multi-platform chat bot framework',
     long_description=get_long_description(),
+    long_description_content_type='text/markdown',
     keywords='chat bot chatbot AI artificial intelligence email xmpp IM message text messaging framework slack session '
              'conversation interactive platform multi-platform window local remote protocol',
     classifiers=[
