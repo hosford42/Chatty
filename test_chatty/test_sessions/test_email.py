@@ -1,5 +1,6 @@
 import imaplib
 import smtplib
+import unittest
 from typing import Tuple
 
 from chatty.sessions.email import EmailSession, SMTPFactory, IMAPFactory
@@ -30,3 +31,7 @@ class EmailSessionTestCase(BaseClasses.SessionTestCase):
         )
 
         return self.smtp_config.handle, session, self.imap_config.handle, session
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -1,5 +1,6 @@
 from typing import Iterable, Tuple
 import datetime
+import unittest
 
 from chatty.bots.standard import make_bot
 from chatty.sessions.interface import Session
@@ -46,3 +47,7 @@ class TkChatClientTestCase(BaseClasses.SessionTestCase):
         # TODO: Emulate keystrokes on behalf of the user in a separate thread, instead of requiring someone to
         #       actually interact with the bot here.
         self.sender_session.run()
+
+
+if __name__ == '__main__':
+    unittest.main()

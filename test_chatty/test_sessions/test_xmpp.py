@@ -1,4 +1,5 @@
 from typing import Tuple
+import unittest
 
 from chatty.sessions.interface import Session
 from chatty.types import Handle
@@ -23,3 +24,7 @@ class TestXMPPSession(BaseClasses.SessionTestCase):
 
     def get_session_pair(self) -> Tuple[Handle, Session, Handle, Session]:
         return self.config1.handle, XMPPSession(self.config1), self.config2.handle, XMPPSession(self.config2)
+
+
+if __name__ == '__main__':
+    unittest.main()
