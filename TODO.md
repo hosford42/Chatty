@@ -1,11 +1,5 @@
 # TODO
 
-* A license.
-* Separately installable features for proprietary or restrictively-licensed dependencies.
-  (In other words, we should have to install `chatty[slack]` to be able to use Slack.
-  This is useful for cutting down on the installation of unnecessary optional
-  dependencies, and also for preventing dependence on and consequent infection by
-  libraries that fall under copyleft licenses.)
 * Query types:
     * Supported features/operations/message types
     * Group/channel membership
