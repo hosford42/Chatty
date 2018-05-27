@@ -1,7 +1,6 @@
 import datetime
 import logging
 import threading
-import time
 from collections import OrderedDict
 
 import tzlocal
@@ -13,10 +12,10 @@ import tzlocal
 from sleekxmpp import ClientXMPP, JID
 
 from chatty.exceptions import OperationNotSupported
-from chatty.signals.messages import Message
 from chatty.sessions.interface import Session
-from chatty.signals.metadata import SignalMetaData
 from chatty.signals.interface import Signal
+from chatty.signals.message import Message
+from chatty.signals.metadata import SignalMetaData
 from chatty.types import ProtocolConfig, Handle, SignalID
 
 LOGGER = logging.getLogger(__name__)
@@ -97,6 +96,7 @@ class XMPPSession(Session):
     def send(self, signal: Signal) -> None:
         if not isinstance(signal, Message):
             raise TypeError(signal)
+        assert isinstance(signal, Message)
 
         origin = signal.meta_data.origin
         if signal.meta_data.visible_to:

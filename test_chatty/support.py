@@ -8,7 +8,7 @@ import time
 import unittest
 
 from chatty.bots.standard_bot import make_bot
-from chatty.signals.messages import Message
+from chatty.signals.message import Message
 from chatty.sessions.interface import Session
 from chatty.signals.metadata import SignalMetaData
 from chatty.support import get_protocol_config
@@ -59,7 +59,8 @@ class BaseClasses:
                 yield SignalMetaData(origin=self.sender_handle, addressees=[self.receiver_handle])
 
         def setUp(self):
-            self.sender_handle, self.sender_session, self.receiver_handle, self.receiver_session = self.get_session_pair()
+            self.sender_handle, self.sender_session, self.receiver_handle, self.receiver_session = \
+                self.get_session_pair()
             self.received = deque()
             self.bot = make_bot(lambda sess, sig: self.received.append(sig))
             self.receiver_session.add_bot(self.bot)

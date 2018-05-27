@@ -13,7 +13,7 @@ import time
 import tzlocal
 
 from chatty.exceptions import OperationNotSupported
-from chatty.signals.messages import Message
+from chatty.signals.message import Message
 from chatty.sessions.interface import Session
 from chatty.signals.interface import Signal
 from chatty.signals.metadata import SignalMetaData

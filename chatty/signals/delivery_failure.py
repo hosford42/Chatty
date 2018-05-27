@@ -5,7 +5,7 @@ from chatty.signals.metadata import SignalMetaData
 from chatty.types import ErrorCode
 
 
-class TransmissionFailure(Signal):
+class DeliveryFailure(Signal):
 
     def __init__(self, meta_data: SignalMetaData, error_code: ErrorCode, error_message: str = None):
         super().__init__(meta_data)
