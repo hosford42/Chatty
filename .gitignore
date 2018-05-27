@@ -1,5 +1,5 @@
 .chatty_test_config
-old_version/
+.bak/
 __pycache__/
 *.py[cod]
 *$py.class
