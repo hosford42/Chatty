@@ -2,10 +2,12 @@
 
 * Query types:
     * Supported features/operations/message types
+    * Address type (individual, group, channel)
     * Group/channel membership
-    * Presence
+    * Current presence/status associated with an address
     * User profile info
     * Message history
+    * Delivery status of a signal
 * Signal types:
     * Message **WIP**
         * Text

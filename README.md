@@ -36,78 +36,24 @@ agree, as per standard practice, and also the [GitHub terms of service] to
 make your code available under the [license] governing this project.
 
 
-## Design Requirements
+## Design
 
-### Signalling
+The design of Chatty is object-oriented, and centers around 3 core 
+abstractions:
 
-* Asynchronous inbound signal stream
-* Synchronous inbound signal queue
-* Supported inbound/outbound signal types:
-    * Message (I/O)
-        * Subject
-        * Multimedia content
-        * Attachments
-    * File (I/O)
-        * File name
-        * Content or download URL
-    * Send failure (I)
-        * Error type
-        * Error message 
-    * Status change (I/O)
-        * Status type (on/offline, available/busy, present in room, typing in room)
-        * Status message
-    * User-defined (I/O)
-  Additionally, I/O signal types have the following metadata:
-    * Unique ID
-    * Response to signal ID
-    * Sent time
-    * Received time
-    * Origin address ("from" for email, "sender" for IMs)
-    * Addressee addresses ("to" for email, direct IMs)
-    * Visible to addresses ("to" for room IMs, "cc" for email)
-* Supported internal signal types:
-    * Connection error
-    * Session started
-    * Initiate session end
-    * Session about to end
-    * Session ended
-    * Download file
-    * System error
-    * Unsupported signal
+* **Signal**: A signal is any single indivisible element of communication,
+  such as a message or a notification, which may or may not contain
+  content or data of some sort. Signals always come with certain attached
+  *metadata* which determines where the signal originated, who it was
+  sent to, when it was sent, etc.
+* **Bot**: A bot is an endpoint where inbound signals are handled, and
+  outbound signals are generated.
+* **Session**: A session is an open channel over which signals can be
+  sent and/or received.
 
-### Queries
-
-* Address type (individual, group, channel)
-* Components of address (other addresses this group/channel currently contains)
-* Current status of any address
-* Signals previously received from an address
-* Signals previously sent to an address
-* Delivery status of a signal
-* Current status of an individual address with respect to a channel 
-* Current status of the bot with respect to a channel
-* Which signals are supported by an address
-* Which message types/features are supported by an address
-
-
-### Structure
-
-* Bot interface
-    * Determines standard interface for all chat bots    
-* Synchronizer
-    * Decorates the bot interface with a synchronized signal queue,
-      allowing asynchronous interaction with a synchronous bot
-* Logger
-    * Decorates the bot interface with interaction logging
-* Session
-    * Interfaces a bot to a messaging protocol such as SMTP or XMPP
-    * Multiple servers may interact with the same bot
-* Proxy
-    * Maps a remotely operating bot (or person), accessed via a messaging 
-      protocol such as SMTP or XMPP, to the bot interface
-* Direct chat connection
-    * Links two or more bots together for local, direct interaction 
-* Client
-    * Maps a user interface (i.e. a chat window) to the bot interface
+By default, signals arrive and are sent asynchronously. The 
+`SynchronizedBot` wrapper can be used to ensure receipt and sending
+of signals is fully synchronized from the perspective of the bot.
 
 
 [chatty/sessions]: https://github.com/hosford42/Chatty/tree/master/chatty/sessions
