@@ -138,18 +138,6 @@ class XMPPSession(Session):
 
             origin = message['from'].bare
 
-            nicks = [
-                value
-                for path, value
-                in search_nested_dict(message.values, ['nick', 'mucnick'])
-            ]
-
-            # If the bot said it, it shouldn't respond to it.
-            # if self._xmpp_connection_info.nickname in nicks or self._xmpp_connection_info.handle == origin:
-            if self._xmpp_connection_info.handle_configs[0].handle == origin:
-                LOGGER.debug("Ignoring self-generated message.")
-                return
-
             # Only handle regular chat messages
             if message['type'] not in ('chat', 'normal'):
                 LOGGER.debug("Ignoring non-chat message.")

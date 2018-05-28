@@ -1,7 +1,5 @@
 # TODO
 
-* Associate bots with handles when adding them to sessions. Use this to filter
-  out acknowledgements, echo-backs, etc.
 * Figure out how to make the sleekxmpp process thread a daemon, so tests don't
   hang when they fail.
 * Query types:
