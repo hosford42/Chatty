@@ -16,7 +16,7 @@ from chatty.sessions.interface import Session
 from chatty.signals.interface import Signal
 from chatty.signals.message import Message
 from chatty.signals.metadata import SignalMetaData
-from chatty.types import ProtocolConfig, Handle, SignalID
+from chatty.types import LoginConfig, Handle, SignalID
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class XMPPSession(Session):
     An XMPP chat session interface.
     """
 
-    def __init__(self, connection_info: ProtocolConfig, xmpp_client: ClientXMPP = None,
+    def __init__(self, connection_info: LoginConfig, xmpp_client: ClientXMPP = None,
                  starting: datetime.datetime = None):
         super().__init__()
 
@@ -109,8 +109,7 @@ class XMPPSession(Session):
                 mfrom=origin,
                 mto=signal.meta_data.room,
                 mbody=str(signal.content),
-                mtype='groupchat',
-                mnick=self._xmpp_connection_info.nickname
+                mtype='groupchat'
             )
 
         for recipient in signal.meta_data.addressees:
@@ -118,8 +117,7 @@ class XMPPSession(Session):
                 mfrom=origin,
                 mto=recipient,
                 mbody=str(signal.content),
-                mtype='chat',
-                mnick=self._xmpp_connection_info.nickname
+                mtype='chat'
             )
 
         self._check_for_thread_errors()
@@ -147,7 +145,8 @@ class XMPPSession(Session):
             ]
 
             # If the bot said it, it shouldn't respond to it.
-            if self._xmpp_connection_info.nickname in nicks or self._xmpp_connection_info.handle == origin:
+            # if self._xmpp_connection_info.nickname in nicks or self._xmpp_connection_info.handle == origin:
+            if self._xmpp_connection_info.handle_configs[0].handle == origin:
                 LOGGER.debug("Ignoring self-generated message.")
                 return
 
@@ -159,8 +158,8 @@ class XMPPSession(Session):
             meta_data = SignalMetaData(
                 identifier=SignalID(message['id']),
                 origin=Handle(origin),
-                addressees=[Handle(self._xmpp_connection_info.handle)],
-                visible_to=[Handle(origin), Handle(self._xmpp_connection_info.handle)],
+                addressees=[Handle(self._xmpp_connection_info.handle_configs[0].handle)],
+                visible_to=[Handle(origin), Handle(self._xmpp_connection_info.handle_configs[0].handle)],
                 response_to=None,
                 sent_at=None,
                 received_at=datetime.datetime.now(),
@@ -194,7 +193,7 @@ class XMPPSession(Session):
                 LOGGER.debug("Ignoring non-groupchat message.")
                 return
 
-            # TODO: This is just a guess. I have no idea how to actually get the room.
+            # TODO: This is just a guess. I have no idea how to actually get the room. Test it!
             LOGGER.debug(message)
             room = Handle(message['room'])
 
@@ -228,12 +227,13 @@ class XMPPSession(Session):
             LOGGER.exception("Error in on_failed_authentication()")
             self._notify_thread_error(exc)
 
+    # noinspection PyMethodMayBeStatic
     def on_error(self, event):
-        print(event)
+        LOGGER.error("XMPP error event: %s" % event)
 
 
-def make_xmpp_client(connection_info: ProtocolConfig):
-    client = ClientXMPP(connection_info.handle, connection_info.password)
+def make_xmpp_client(connection_info: LoginConfig):
+    client = ClientXMPP('%s@%s' % (connection_info.user, connection_info.host), connection_info.password)
     client.use_signals()
     client.register_plugin('xep_0030')  # Service Discovery
     client.register_plugin('xep_0045')  # Multi-User Chat

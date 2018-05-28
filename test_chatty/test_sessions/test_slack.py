@@ -12,7 +12,7 @@ from chatty.sessions.slack import SlackSession
 from chatty.signals.interface import Signal
 from chatty.signals.metadata import SignalMetaData
 from chatty.types import Handle
-from test_chatty.support import get_protocol_test_config, BaseClasses
+from test_chatty.support import get_test_login_config, BaseClasses
 
 
 import logging
@@ -28,8 +28,8 @@ logging.basicConfig()
 class SlackSessionTestCase(BaseClasses.SessionTestCase):
 
     def setUp(self):
-        self.slack_config1 = get_protocol_test_config('Slack #1', 0)
-        self.slack_config2 = get_protocol_test_config('Slack #2', 0)
+        self.slack_config1 = get_test_login_config('Slack #1')
+        self.slack_config2 = get_test_login_config('Slack #2')
         super().setUp()
 
     def get_session_pair(self) -> Tuple[Handle, Session, Handle, Session]:
@@ -39,7 +39,8 @@ class SlackSessionTestCase(BaseClasses.SessionTestCase):
         receiver_client = SlackClient(token=self.slack_config2.password)
         receiver_client.rtm_connect()
         receiver_session = SlackSession(receiver_client)
-        return self.slack_config1.handle, sender_session, self.slack_config2.handle, receiver_session
+        return (self.slack_config1.handle_configs[0].handle, sender_session,
+                self.slack_config2.handle_configs[0].handle, receiver_session)
 
     def check_signal(self, original: Signal, received: Signal):
         self.assertEqual(type(original), type(received))
@@ -49,7 +50,7 @@ class SlackSessionTestCase(BaseClasses.SessionTestCase):
     def test_delivery_failure(self):
         sent_at = datetime.datetime.now()
         meta_data = SignalMetaData(
-            origin=self.slack_config2.handle,
+            origin=self.slack_config2.handle_configs[0].handle,
             addressees=[Handle('nonexistent_channel')],
             sent_at=sent_at
         )

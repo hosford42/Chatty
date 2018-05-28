@@ -13,6 +13,7 @@ def get_long_description():
         return None
 
 
+# noinspection SpellCheckingInspection
 setup(
     name='Chatty',
     version='0.1',

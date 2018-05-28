@@ -11,7 +11,7 @@ from chatty.signals.delivery_failure import DeliveryFailure
 from chatty.signals.message import Message
 from chatty.signals.metadata import SignalMetaData
 from chatty.types import Handle, SignalID
-from test_chatty.support import get_protocol_test_config, BaseClasses
+from test_chatty.support import get_test_login_config, BaseClasses
 
 
 # NOTES:
@@ -23,8 +23,8 @@ from test_chatty.support import get_protocol_test_config, BaseClasses
 class EmailSessionTestCase(BaseClasses.SessionTestCase):
 
     def setUp(self):
-        self.smtp_config = get_protocol_test_config('SMTP', smtplib.SMTP_PORT)
-        self.imap_config = get_protocol_test_config('IMAP (SSL)', imaplib.IMAP4_SSL_PORT)
+        self.smtp_config = get_test_login_config('SMTP', port=smtplib.SMTP_PORT)
+        self.imap_config = get_test_login_config('IMAP (SSL)', port=imaplib.IMAP4_SSL_PORT)
         super().setUp()
 
     def get_session_pair(self) -> Tuple[Handle, Session, Handle, Session]:
@@ -34,14 +34,14 @@ class EmailSessionTestCase(BaseClasses.SessionTestCase):
             rate=.001
         )
 
-        return self.smtp_config.handle, session, self.imap_config.handle, session
+        return self.smtp_config.handle_configs[0].handle, session, self.imap_config.handle_configs[0].handle, session
 
     def test_delivery_failure(self):
         sent_at = datetime.datetime.now()
         meta_data = SignalMetaData(
             identifier=SignalID('bad-message-%s' % sent_at.timestamp()),
             origin=Handle('mailer-daemon@' + self.smtp_config.host),
-            addressees=[self.imap_config.handle],
+            addressees=[self.imap_config.handle_configs[0].handle],
             sent_at=sent_at
         )
         content = "Delivery failure"

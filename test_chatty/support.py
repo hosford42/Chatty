@@ -7,15 +7,15 @@ from typing import Tuple, Iterable
 
 from chatty.bots.interface import Bot
 from chatty.bots.standard import make_bot
+from chatty.configuration import get_login_config
 from chatty.sessions.interface import Session
 from chatty.signals.interface import Signal
 from chatty.signals.message import Message
 from chatty.signals.metadata import SignalMetaData
-from chatty.support import get_protocol_config
-from chatty.types import ProtocolConfig, Handle
+from chatty.types import LoginConfig, Handle
 
 
-def get_protocol_test_config(protocol: str, default_port: int, path: str = None) -> ProtocolConfig:
+def get_test_login_config(protocol: str, path: str = None, **defaults) -> LoginConfig:
     if path is None:
         # Some IDEs (e.g. PyCharm) run the tests with the default CWD set to the test code's path when they're run
         # individually, so we can't rely on relative paths to be consistent.
@@ -23,22 +23,20 @@ def get_protocol_test_config(protocol: str, default_port: int, path: str = None)
             path = '.chatty_test_config'
         else:
             path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.chatty_test_config')
-    return get_protocol_config(protocol, default_port, path)
+    return get_login_config(protocol, path, **defaults)
 
 
 def assert_same_message(original: Message, received: Message):
-    if original.meta_data.identifier is not None:
-        assert original.meta_data.identifier == received.meta_data.identifier
-    assert original.meta_data.origin == received.meta_data.origin, received.meta_data
-    assert original.meta_data.addressees == received.meta_data.addressees
-    if original.meta_data.visible_to:
-        assert original.meta_data.visible_to == received.meta_data.visible_to
-    else:
-        assert set(received.meta_data.visible_to) <= set(original.meta_data.addressees) | {original.meta_data.origin}
-    assert original.meta_data.response_to == received.meta_data.response_to
-    if original.meta_data.sent_at is not None:
-        assert original.meta_data.sent_at == received.meta_data.sent_at
-    assert set(str(original.content).splitlines()) <= set(str(received.content).splitlines())
+    for attribute in ('identifier', 'origin', 'addressees', 'response_to'):
+        original_value = getattr(original.meta_data, attribute)
+        received_value = getattr(received.meta_data, attribute)
+        assert not original_value or original_value == received_value, '%s = %s' % (attribute, received_value)
+
+    assert set(received.meta_data.visible_to) <= set(original.meta_data.addressees) | {original.meta_data.origin}, \
+        'visible_to = %s' % received.meta_data.visible_to
+
+    assert set(str(original.content).splitlines()) <= set(str(received.content).splitlines()), \
+        'content:\n%s' % received.content
 
 
 class BaseClasses:

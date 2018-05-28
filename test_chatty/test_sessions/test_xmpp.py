@@ -5,7 +5,7 @@ from chatty.sessions.interface import Session
 from chatty.sessions.xmpp import XMPPSession, make_xmpp_client
 from chatty.types import Handle
 from test_chatty.support import BaseClasses
-from test_chatty.support import get_protocol_test_config
+from test_chatty.support import get_test_login_config
 
 
 # NOTES:
@@ -17,8 +17,8 @@ from test_chatty.support import get_protocol_test_config
 class TestXMPPSession(BaseClasses.SessionTestCase):
 
     def setUp(self):
-        self.config1 = get_protocol_test_config('XMPP #1', 5222)
-        self.config2 = get_protocol_test_config('XMPP #2', 5222)
+        self.config1 = get_test_login_config('XMPP #1', defaults={'port': 5222})
+        self.config2 = get_test_login_config('XMPP #2', defaults={'port': 5222})
         super().setUp()
 
     def get_session_pair(self) -> Tuple[Handle, Session, Handle, Session]:
@@ -26,8 +26,8 @@ class TestXMPPSession(BaseClasses.SessionTestCase):
         xmpp_client1.add_event_handler("ssl_invalid_cert", lambda *args, **kwargs: None)
         xmpp_client2 = make_xmpp_client(self.config2)
         xmpp_client2.add_event_handler("ssl_invalid_cert", lambda *args, **kwargs: None)
-        return (self.config1.handle, XMPPSession(self.config1, xmpp_client1),
-                self.config2.handle, XMPPSession(self.config2, xmpp_client2))
+        return (self.config1.handle_configs[0].handle, XMPPSession(self.config1, xmpp_client1),
+                self.config2.handle_configs[0].handle, XMPPSession(self.config2, xmpp_client2))
 
     # TODO: Add a test for this once support for XEP 0079 is added to sleekxmpp.
     # def test_delivery_failure(self):

@@ -18,7 +18,7 @@ from chatty.signals.interface import Signal
 from chatty.signals.message import Message
 from chatty.signals.delivery_failure import DeliveryFailure
 from chatty.signals.metadata import SignalMetaData
-from chatty.types import ProtocolConfig
+from chatty.types import LoginConfig
 
 
 LOGGER = logging.getLogger(__name__)
@@ -173,7 +173,7 @@ class EmailSession(Session):
 class SMTPFactory:
     """Convenience class for creating"""
 
-    def __init__(self, connection_info: ProtocolConfig, connection_type: Type[smtplib.SMTP] = smtplib.SMTP_SSL):
+    def __init__(self, connection_info: LoginConfig, connection_type: Type[smtplib.SMTP] = smtplib.SMTP_SSL):
         self.connection_info = connection_info
         self.connection_type = connection_type
 
@@ -193,9 +193,9 @@ class SMTPFactory:
 
 class IMAPFactory:
 
-    def __init__(self, connection_info: ProtocolConfig, mailbox: str = 'inbox',
+    def __init__(self, connection_info: LoginConfig, mailbox: str = 'inbox',
                  connection_type: Type[imaplib.IMAP4] = imaplib.IMAP4_SSL):
-        assert isinstance(connection_info, ProtocolConfig)
+        assert isinstance(connection_info, LoginConfig)
         self.connection_info = connection_info
         self.mailbox = mailbox
         self.connection_type = connection_type
