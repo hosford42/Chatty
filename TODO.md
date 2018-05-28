@@ -12,8 +12,8 @@
     * Message **WIP**
         * Text
         * MIME
-        * user mentions
-        * hash tags
+        * User mentions
+        * Hash tags
         * Other content types
     * Arrival/departure
     * Status change
@@ -25,7 +25,7 @@
     * Direct user-to-bot
     * Direct bot-to-bot  **DONE** (needs tests)
     * IMAP/smtp email (imaplib/smtplib, builtin) **DONE**
-    * Slack ([slackclient](https://github.com/slackapi/python-slackclient), MIT) **WIP**
+    * Slack ([slackclient](https://github.com/slackapi/python-slackclient), MIT) **DONE**
     * Discord ([discord.py](https://github.com/Rapptz/discord.py), MIT)
     * Reddit ([praw](https://praw.readthedocs.io/en/latest/), BSD)
     * Twitter ([twitter](https://github.com/sixohsix/twitter), MIT)
@@ -44,7 +44,10 @@
         https://github.com/python-telegram-bot/python-telegram-bot), **GPL or LGPL, unclear**)
     * WhatsApp ([yowsup](https://github.com/tgalal/yowsup), **GPL**)
     * Skype ([SkPy](https://pypi.org/project/SkPy/), **no defined license at this time**)
-    * SnapChat (these guys actively sabotage any library accessing their API. skip it)
     * QQ Mobile
+    * Mattermost
+    * Rocket.Chat
+    * Let's Chat (appears to support XMPP, meaning it's already covered)
+    * SnapChat (these guys actively sabotage any library accessing their API. skip it)
     * Others? (see [this chart](
         https://www.statista.com/statistics/258749/most-popular-global-mobile-messenger-apps/))

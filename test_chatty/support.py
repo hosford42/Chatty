@@ -1,17 +1,15 @@
-from abc import abstractmethod, ABCMeta
-from collections import deque
-# noinspection PyProtectedMember
-from email.message import MIMEPart
-from typing import Tuple, Iterable, Deque
 import os
 import time
 import unittest
+from abc import abstractmethod, ABCMeta
+from collections import deque
+from typing import Tuple, Iterable
 
 from chatty.bots.interface import Bot
 from chatty.bots.standard import make_bot
-from chatty.signals.message import Message
 from chatty.sessions.interface import Session
 from chatty.signals.interface import Signal
+from chatty.signals.message import Message
 from chatty.signals.metadata import SignalMetaData
 from chatty.support import get_protocol_config
 from chatty.types import ProtocolConfig, Handle
@@ -31,7 +29,7 @@ def get_protocol_test_config(protocol: str, default_port: int, path: str = None)
 def assert_same_message(original: Message, received: Message):
     if original.meta_data.identifier is not None:
         assert original.meta_data.identifier == received.meta_data.identifier
-    assert original.meta_data.origin == received.meta_data.origin
+    assert original.meta_data.origin == received.meta_data.origin, received.meta_data
     assert original.meta_data.addressees == received.meta_data.addressees
     if original.meta_data.visible_to:
         assert original.meta_data.visible_to == received.meta_data.visible_to
@@ -77,18 +75,23 @@ class BaseClasses:
             self.receiver_session.close()
             assert not self.received
 
+        def check_signal(self, original: Signal, received: Signal):
+            self.assertEqual(type(original), type(received))
+            if isinstance(original, Message):
+                assert isinstance(received, Message)
+                assert_same_message(original, received)
+
         def test(self):
             for index, meta_data in enumerate(self.meta_data_sequence()):
-                content = MIMEPart()
-                content.set_payload("Message #%s" % index)
+                content = "Message #%s" % index
                 message = Message(meta_data, content)
                 self.sender_session.send(message)
 
                 for _ in range(self.max_receiver_delay * 1000):
                     time.sleep(.001)
                     if self.received:
-                        assert_same_message(message, self.received.popleft())
+                        self.check_signal(message, self.received.popleft())
                         break
                 else:
-                    assert_same_message(message, self.received.popleft())
+                    self.check_signal(message, self.received.popleft())
                 print("%s message #%s successful." % (type(self).__name__, index))

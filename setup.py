@@ -3,10 +3,11 @@ import traceback
 
 
 def get_long_description():
+    # noinspection PyBroadException
     try:
         with open('README.md', encoding='utf-8') as file:
             return file.read()
-    except OSError:
+    except Exception:
         traceback.print_exc()
         print("Long description will not be included.")
         return None
@@ -45,11 +46,11 @@ setup(
         'Topic :: Text Processing :: Linguistic'
     ],
     install_requires=[
-        'tzlocal',  # MIT
+        'tzlocal'  # MIT
     ],
     extras_require={
         'slack': ['slackclient>=1.2'],
         'tkinter': ['tkinter>=8.6'],  # This doesn't come as a built-in package for all platforms.
-        'xmpp': ['sleekxmpp>=1.3', 'dnspython>=1.15'],
+        'xmpp': ['sleekxmpp>=1.3', 'dnspython>=1.15', 'pyasn1>=0.4', 'pyasn1_modules>=0.2'],
     }
 )

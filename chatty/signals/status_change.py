@@ -10,7 +10,7 @@ StatusValue = NewType('StatusValue', str)
 
 class StatusChange(Signal):
 
-    def __init__(self, meta_data: SignalMetaData, type_: StatusType, value: StatusValue, message: str = None):
+    def __init__(self, meta_data: SignalMetaData, type_: StatusType, value: StatusValue, content: str = None):
         super().__init__(meta_data)
         self._type = type_
         self._value = value

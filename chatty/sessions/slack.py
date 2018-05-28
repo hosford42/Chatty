@@ -10,6 +10,7 @@ from slackclient import SlackClient
 
 from chatty.exceptions import AuthenticationFailure, OperationNotSupported
 from chatty.sessions.interface import Session
+from chatty.signals.delivery_failure import DeliveryFailure
 from chatty.signals.interface import Signal
 from chatty.signals.message import Message
 from chatty.signals.metadata import SignalMetaData
@@ -118,13 +119,21 @@ class SlackSession(Session):
 
     # noinspection PyMethodMayBeStatic
     def _handle_inbound_hello(self, event):
-        # TODO: Handle these.
-        LOGGER.warning("Ignoring hello event: %s" % event)
+        LOGGER.info("Server says hello: %s" % event)
 
     # noinspection PyMethodMayBeStatic
     def _handle_inbound_reconnect_url(self, event):
         # TODO: Handle these.
         LOGGER.warning("Ignoring reconnect url event: %s" % event)
+
+    def _handle_inbound_error(self, event):
+        error = event['error']
+        if error['msg'] in ('invalid channel id', 'channel not found'):
+            meta_data = SignalMetaData(received_at=datetime.datetime.now())
+            self.receive(DeliveryFailure(meta_data, error['msg'], error['code']))
+        else:
+            # TODO: Handle these.
+            LOGGER.warning("Ignoring inbound error event: %s" % event)
 
     def _slack_thread_main(self):
         inbound_event_handlers = {
@@ -132,7 +141,8 @@ class SlackSession(Session):
             'presence_change': self._handle_inbound_presence_change,
             'user_typing': self._handle_inbound_user_typing,
             'hello': self._handle_inbound_hello,
-            'reconnect_url': self._handle_inbound_reconnect_url
+            'reconnect_url': self._handle_inbound_reconnect_url,
+            'error': self._handle_inbound_error,
         }
         while self._alive:
             # noinspection PyBroadException

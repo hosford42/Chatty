@@ -1,10 +1,9 @@
-from typing import Tuple
 import unittest
+from typing import Tuple
 
 from chatty.sessions.interface import Session
+from chatty.sessions.xmpp import XMPPSession, make_xmpp_client
 from chatty.types import Handle
-from chatty.sessions.xmpp import XMPPSession
-
 from test_chatty.support import BaseClasses
 from test_chatty.support import get_protocol_test_config
 
@@ -23,7 +22,15 @@ class TestXMPPSession(BaseClasses.SessionTestCase):
         super().setUp()
 
     def get_session_pair(self) -> Tuple[Handle, Session, Handle, Session]:
-        return self.config1.handle, XMPPSession(self.config1), self.config2.handle, XMPPSession(self.config2)
+        xmpp_client1 = make_xmpp_client(self.config1)
+        xmpp_client1.add_event_handler("ssl_invalid_cert", lambda *args, **kwargs: None)
+        xmpp_client2 = make_xmpp_client(self.config2)
+        xmpp_client2.add_event_handler("ssl_invalid_cert", lambda *args, **kwargs: None)
+        return (self.config1.handle, XMPPSession(self.config1, xmpp_client1),
+                self.config2.handle, XMPPSession(self.config2, xmpp_client2))
+
+    # TODO: Add a test for this once support for XEP 0079 is added to sleekxmpp.
+    # def test_delivery_failure(self):
 
 
 if __name__ == '__main__':

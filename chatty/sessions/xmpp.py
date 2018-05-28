@@ -67,7 +67,8 @@ class XMPPSession(Session):
         self._xmpp_client.add_event_handler("session_start", self.on_session_started)
         self._xmpp_client.add_event_handler("message", self.on_message)
         self._xmpp_client.add_event_handler("groupchat_message", self.on_group_chat_message)
-        self._xmpp_client.add_event_handler('failed_auth', self.on_failed_authentication)
+        self._xmpp_client.add_event_handler("failed_auth", self.on_failed_authentication)
+        self._xmpp_client.add_event_handler("error", self.on_error)
 
         self._main_thread = threading.current_thread()
         self._thread_error = None
@@ -90,7 +91,8 @@ class XMPPSession(Session):
         self._thread_error = exc
 
     def close(self):
-        self._xmpp_client.disconnect()
+        if hasattr(self, '_xmpp_client'):
+            self._xmpp_client.disconnect()
         self._check_for_thread_errors()
 
     def send(self, signal: Signal) -> None:
@@ -226,6 +228,9 @@ class XMPPSession(Session):
             LOGGER.exception("Error in on_failed_authentication()")
             self._notify_thread_error(exc)
 
+    def on_error(self, event):
+        print(event)
+
 
 def make_xmpp_client(connection_info: ProtocolConfig):
     client = ClientXMPP(connection_info.handle, connection_info.password)
@@ -233,4 +238,8 @@ def make_xmpp_client(connection_info: ProtocolConfig):
     client.register_plugin('xep_0030')  # Service Discovery
     client.register_plugin('xep_0045')  # Multi-User Chat
     client.register_plugin('xep_0199')  # XMPP Ping
+
+    # TODO: Use XEP 0079 to add delivery failure notifications once the sleekxmpp plugin for this XEP is released.
+    # client.register_plugin('xep_0079')  # Advanced Message Processing
+
     return client

@@ -1,17 +1,22 @@
 import datetime
-import imaplib
-import smtplib
 import time
 import unittest
 from typing import Tuple
 
-from chatty.sessions.email import EmailSession, SMTPFactory, IMAPFactory
-from chatty.sessions.interface import Session
 from chatty.signals.delivery_failure import DeliveryFailure
 from chatty.signals.message import Message
+from slackclient import SlackClient
+
+from chatty.sessions.interface import Session
+from chatty.sessions.slack import SlackSession
+from chatty.signals.interface import Signal
 from chatty.signals.metadata import SignalMetaData
-from chatty.types import Handle, SignalID
+from chatty.types import Handle
 from test_chatty.support import get_protocol_test_config, BaseClasses
+
+
+import logging
+logging.basicConfig()
 
 
 # NOTES:
@@ -20,33 +25,37 @@ from test_chatty.support import get_protocol_test_config, BaseClasses
 #   [here](https://gist.github.com/raelgc/6031274).
 
 
-class EmailSessionTestCase(BaseClasses.SessionTestCase):
+class SlackSessionTestCase(BaseClasses.SessionTestCase):
 
     def setUp(self):
-        self.smtp_config = get_protocol_test_config('SMTP', smtplib.SMTP_PORT)
-        self.imap_config = get_protocol_test_config('IMAP (SSL)', imaplib.IMAP4_SSL_PORT)
+        self.slack_config1 = get_protocol_test_config('Slack #1', 0)
+        self.slack_config2 = get_protocol_test_config('Slack #2', 0)
         super().setUp()
 
     def get_session_pair(self) -> Tuple[Handle, Session, Handle, Session]:
-        session = EmailSession(
-            SMTPFactory(self.smtp_config, connection_type=smtplib.SMTP),
-            IMAPFactory(self.imap_config, connection_type=imaplib.IMAP4_SSL),
-            rate=.001
-        )
+        sender_client = SlackClient(token=self.slack_config1.password)
+        sender_client.rtm_connect()
+        sender_session = SlackSession(sender_client)
+        receiver_client = SlackClient(token=self.slack_config2.password)
+        receiver_client.rtm_connect()
+        receiver_session = SlackSession(receiver_client)
+        return self.slack_config1.handle, sender_session, self.slack_config2.handle, receiver_session
 
-        return self.smtp_config.handle, session, self.imap_config.handle, session
+    def check_signal(self, original: Signal, received: Signal):
+        self.assertEqual(type(original), type(received))
+        self.assertEqual(original.content, received.content)
+        self.assertEqual(original.meta_data.origin, received.meta_data.origin)
 
     def test_delivery_failure(self):
         sent_at = datetime.datetime.now()
         meta_data = SignalMetaData(
-            identifier=SignalID('bad-message-%s' % sent_at.timestamp()),
-            origin=Handle('mailer-daemon@' + self.smtp_config.host),
-            addressees=[self.imap_config.handle],
+            origin=self.slack_config2.handle,
+            addressees=[Handle('nonexistent_channel')],
             sent_at=sent_at
         )
         content = "Delivery failure"
         message = Message(meta_data, content)
-        self.sender_session.send(message)
+        self.receiver_session.send(message)
 
         for _ in range(self.max_receiver_delay * 1000):
             time.sleep(.001)

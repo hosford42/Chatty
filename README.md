@@ -14,9 +14,9 @@ at the same time, with nothing more than a change to a configuration file.
 ## Current Development Status
 
 Chatty is brand new, and has currently only been tested for basic message
-delivery using email (imap & smtp, but not pop3 yet) and xmpp. Support for
-Slack is underway. See the [TODO list] for a list of platforms & protocols 
-that will (hopefully) eventually be added.
+delivery using email (imap & smtp, but not pop3 yet), xmpp, and Slack. See 
+the [TODO list] for a list of other platforms that will (hopefully) 
+eventually be supported.
 
 
 ## Contributing

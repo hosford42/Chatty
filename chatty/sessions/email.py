@@ -1,6 +1,6 @@
 from email import message_from_bytes
 # noinspection PyProtectedMember
-from email.message import EmailMessage
+from email.message import EmailMessage, MIMEPart
 from email.utils import parsedate_to_datetime
 from typing import Callable, Type
 import datetime
@@ -12,10 +12,11 @@ import time
 
 import tzlocal
 
-from chatty.exceptions import OperationNotSupported
-from chatty.signals.message import Message
+from chatty.exceptions import OperationNotSupported, SignalTypeNotSupported
 from chatty.sessions.interface import Session
 from chatty.signals.interface import Signal
+from chatty.signals.message import Message
+from chatty.signals.delivery_failure import DeliveryFailure
 from chatty.signals.metadata import SignalMetaData
 from chatty.types import ProtocolConfig
 
@@ -50,6 +51,21 @@ def parse_email_datetime(value, default=None):
     return result
 
 
+def is_delivery_status_notification(message: EmailMessage) -> bool:
+    # noinspection SpellCheckingInspection
+    """See https://stackoverflow.com/questions/5298285/""" \
+        """detecting-if-an-email-is-a-delivery-status-notification-and-extract-informatio
+    for details on how to detect delivery status notifications.
+    """
+    # https://stackoverflow.com/questions/5298285/detecting-if-an-email-is-a-delivery-status-notification-and-extract-informatio
+    return bool('mailer-daemon@' in message['from'].lower() or message['x-failed-recipients'] or
+                'multipart/report' in message.get_content_type() or 'delivery-status' in message.get_content_type() or
+                (message['action'] or '').lower() == 'failed' or
+                (message['subject'] or '').lower().startswith('delivery status notification') or
+                any('delivery-status' in part.get_content_type() for part in message.get_payload()
+                    if not isinstance(part, str)))
+
+
 class EmailSession(Session):
     """
     An SMTP/IMAP4 email session. The smtp_factory and imap_factory arguments should be functions which
@@ -59,7 +75,7 @@ class EmailSession(Session):
     """
 
     @classmethod
-    def email_to_message(cls, message: EmailMessage) -> 'Message':
+    def email_to_signal(cls, message: EmailMessage) -> 'Signal':
         meta_data = SignalMetaData(
             identifier=message['message-id'],
             origin=message['from'],
@@ -69,6 +85,11 @@ class EmailSession(Session):
             sent_at=parse_email_datetime(message['date']),
             received_at=parse_email_datetime(message['received'])
         )
+
+        # Check if it's a delivery failure notification.
+        if is_delivery_status_notification(message):
+            return DeliveryFailure(meta_data, content=message)
+
         return Message(meta_data, message)
 
     def __init__(self, smtp_factory: Callable[[], smtplib.SMTP], imap_factory: Callable[[], imaplib.IMAP4],
@@ -87,11 +108,18 @@ class EmailSession(Session):
         self._imap_thread.join(timeout=1)
 
     def send(self, signal: Signal) -> None:
+        if not isinstance(signal, Signal):
+            raise TypeError(type(signal))
         if not isinstance(signal, Message):
-            raise TypeError(signal)
+            raise SignalTypeNotSupported(type(signal))
 
         meta_data = signal.meta_data
         content = signal.content
+
+        if isinstance(content, str):
+            content_string = content
+            content = MIMEPart()
+            content.set_payload(content_string)
 
         if meta_data.room:
             raise OperationNotSupported("Chat rooms are not supported for email sessions.")
@@ -135,7 +163,7 @@ class EmailSession(Session):
                             sent_date = parse_email_datetime(email_message['date'], self._starting)
                             if sent_date >= self._starting:
                                 seen.add(message_id)
-                                self.receive(self.email_to_message(email_message))
+                                self.receive(self.email_to_signal(email_message))
                         time.sleep(self._rate)
             except Exception:
                 LOGGER.exception("Error while trying to read email.")
