@@ -19,6 +19,38 @@ the [TODO list] for a list of other platforms that will (hopefully)
 eventually be supported.
 
 
+## Usage
+
+```python
+from chatty.bots.standard import make_bot
+from chatty.sessions.slack import SlackSession
+from chatty.signals.message import Message
+from chatty.signals.metadata import SignalMetaData
+from chatty.types import Handle, Password
+
+
+SLACK_BOT_TOKEN = Password('Your Slack bot token goes here...')
+BOT_HANDLE = Handle('Your Slack bot user name goes here...')
+
+
+def converse(session, signal):
+    """Say 'hi!' back on the same channel whenever someone says 'hello'"""
+    if isinstance(signal, Message) and 'hello' in str(signal.content).lower():
+        meta_data = SignalMetaData(
+            origin=BOT_HANDLE,
+            addressees=[signal.meta_data.room or signal.meta_data.origin],
+            response_to=signal.meta_data.identifier
+        )
+        return Message(meta_data, 'hi!')
+
+
+session = SlackSession(SLACK_BOT_TOKEN)  # Create a new Slack session
+session.add_bot(make_bot(converse))  # Connect our bot to it
+session.join(timeout=5 * 60)  # Hang out for 5 minutes
+session.close()  # Drop offline
+```
+
+
 ## Contributing
 
 If you have a need for a specific platform or protocol to be supported,
