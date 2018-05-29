@@ -27,7 +27,7 @@ Chatty is organized around 3 core abstractions:
 ## Usage
 
 ```python
-from chatty.bots.standard import make_bot
+from chatty.bots.decorator import as_bot
 from chatty.configuration import get_config
 from chatty.sessions.slack import SlackSession
 from chatty.signals.message import Message
@@ -42,6 +42,7 @@ from chatty.signals.metadata import SignalMetaData
 handle, token = get_config('Slack', '~/.chatty_config', ['handle'], ['token'])
 
 
+@as_bot
 def converse(session, signal):
     """Say 'hi!' back on the same channel whenever someone says 'hello'"""
     if isinstance(signal, Message) and 'hello' in str(signal.content).lower():
@@ -54,7 +55,7 @@ def converse(session, signal):
 
 
 session = SlackSession(token)        # Create a new Slack session
-session.add_bot(make_bot(converse))  # Connect our bot to it
+session.add_bot(converse)  # Connect our bot to it
 session.join(timeout=5 * 60)         # Hang out for 5 minutes
 session.close()                      # Drop offline
 ```

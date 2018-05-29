@@ -1,7 +1,9 @@
 # TODO
 
-* Add a decorator to make a function or method into a bot, similar to
-  make_bot(), but leaving it directly callable as well.
+* Allow ordinary functions to be passed into `add_bot()` and automatically
+  wrap them for the user. The main complication here is that when it comes
+  time to remove a bot or iterate over bots, the wrapped bot won't appear
+  as the original function.
 * Make it easier to import what you need. Right now, we need half a dozen
   imports just to create a basic bot -- almost as many lines as the code
   itself. Some sort of convenience module where everything gets dumped
