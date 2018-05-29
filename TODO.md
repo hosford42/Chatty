@@ -6,6 +6,7 @@
   imports just to create a basic bot -- almost as many lines as the code
   itself. Some sort of convenience module where everything gets dumped
   would be handy. Just make sure there are no indecipherable import loops.
+* Add support for encrypted tokens/passwords in config files.
 * Query types:
     * Supported features/operations/message types
     * Address type (individual, group, channel)
