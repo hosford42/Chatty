@@ -1,4 +1,5 @@
 from collections import deque
+from typing import Union
 import datetime
 import logging
 import threading
@@ -14,7 +15,7 @@ from chatty.signals.delivery_failure import DeliveryFailure
 from chatty.signals.interface import Signal
 from chatty.signals.message import Message
 from chatty.signals.metadata import SignalMetaData
-from chatty.types import Handle, SignalID
+from chatty.types import Handle, SignalID, Password
 
 
 LOGGER = logging.getLogger(__name__)
@@ -25,8 +26,12 @@ class SlackSession(Session):
     A Slack chat session interface.
     """
 
-    def __init__(self, slack_client: SlackClient, starting: datetime.datetime = None, rate_limit: float = 1):
+    def __init__(self, slack_client: Union[Password, SlackClient], starting: datetime.datetime = None,
+                 rate_limit: float = 1):
         super().__init__()
+
+        if isinstance(slack_client, str):
+            slack_client = SlackClient(token=slack_client)
 
         self._slack_client = slack_client
         self._starting = datetime.datetime.now(tzlocal.get_localzone()) if starting is None else starting
@@ -60,6 +65,9 @@ class SlackSession(Session):
         self._alive = False
         self._slack_thread.join(timeout=5)
         self._check_for_thread_errors()
+
+    def join(self, timeout=None):
+        self._slack_thread.join(timeout)
 
     def send(self, signal: Signal) -> None:
         if not isinstance(signal, Message):
@@ -163,6 +171,7 @@ class SlackSession(Session):
                             LOGGER.warning("Unhandled Slack event: %s", event)
                         else:
                             handler(event)
+                    time.sleep(self._rate_limit)
             except Exception:
                 LOGGER.exception("Error in Slack thread.")
                 time.sleep(self._rate_limit)

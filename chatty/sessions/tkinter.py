@@ -1,15 +1,13 @@
 import datetime
 import logging
 import time
+import tkinter
 
 from chatty.sessions.interface import Session
 from chatty.signals.interface import Signal
 from chatty.signals.message import Message
 from chatty.signals.metadata import SignalMetaData
 from chatty.types import Handle, SignalID
-
-import tkinter
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -60,6 +58,13 @@ class TkChatSession(Session):
     def close(self):
         self._window.quit()
 
+    def join(self, timeout=None):
+        if timeout is None:
+            while True:
+                time.sleep(1)
+        else:
+            time.sleep(timeout)
+
     def show(self, text):
         self._history.insert(tkinter.END, text + '\n')
         self._history.see(tkinter.END)
@@ -86,7 +91,8 @@ class TkChatSession(Session):
             self.receive(signal)
 
     def run(self):
-        """You MUST call this method from the main thread after setting everything up."""
+        """You MUST call this method from the main thread after setting everything up. It will not return until the
+        window is closed."""
         try:
             # I'm not sure why it's necessary to update first, but this
             # ensures that the text input field really does get the focus.

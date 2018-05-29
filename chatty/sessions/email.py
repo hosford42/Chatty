@@ -107,6 +107,9 @@ class EmailSession(Session):
         self._alive = False
         self._imap_thread.join(timeout=1)
 
+    def join(self, timeout=None):
+        self._imap_thread.join(timeout)
+
     def send(self, signal: Signal) -> None:
         if not isinstance(signal, Signal):
             raise TypeError(type(signal))

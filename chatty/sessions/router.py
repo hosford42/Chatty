@@ -1,4 +1,5 @@
 import logging
+import time
 from itertools import chain
 from typing import Dict, Set
 
@@ -16,6 +17,17 @@ class RouterSession(Session):
     def __init__(self):
         super().__init__()
         self._session_map = {}  # type: Dict[Handle, Set[Session]]
+        self._alive = True
+
+    def close(self):
+        self._alive = False
+
+    def join(self, timeout=None):
+        if timeout is None:
+            while self._alive:
+                time.sleep(1)
+        else:
+            time.sleep(timeout)
 
     def register_session(self, handle: Handle, session: Session):
         if handle in self._session_map:

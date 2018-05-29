@@ -21,6 +21,10 @@ class Session(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def join(self, timeout=None) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
     def send(self, signal: 'chatty.signals.interface.Signal') -> None:
         raise NotImplementedError()
 

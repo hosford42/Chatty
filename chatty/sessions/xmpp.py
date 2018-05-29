@@ -73,11 +73,9 @@ class XMPPSession(Session):
         self._main_thread = threading.current_thread()
         self._thread_error = None
 
-        # Connect to the XMPP server and start processing XMPP stanzas.
-        if self._xmpp_client.connect((connection_info.host, connection_info.port)):
-            self._xmpp_client.process(block=False)
-        else:
-            raise ConnectionError()
+        self._alive = True
+        self._process_thread = threading.Thread(target=self._process_main, daemon=True)
+        self._process_thread.start()
 
         self._check_for_thread_errors()
 
@@ -93,7 +91,12 @@ class XMPPSession(Session):
     def close(self):
         if hasattr(self, '_xmpp_client'):
             self._xmpp_client.disconnect()
+        self._alive = False
+        self._process_thread.join()
         self._check_for_thread_errors()
+
+    def join(self, timeout=None):
+        self._process_thread.join(timeout)
 
     def send(self, signal: Signal) -> None:
         if not isinstance(signal, Message):
@@ -218,6 +221,18 @@ class XMPPSession(Session):
     # noinspection PyMethodMayBeStatic
     def on_error(self, event):
         LOGGER.error("XMPP error event: %s" % event)
+
+    def _process_main(self):
+        while self._alive:
+            try:
+                # Connect to the XMPP server and start processing XMPP stanzas.
+                if self._xmpp_client.connect((self._xmpp_connection_info.host, self._xmpp_connection_info.port)):
+                    self._xmpp_client.process(block=True)
+                else:
+                    raise ConnectionError()
+            except Exception as exc:
+                LOGGER.exception("Error in xmpp client.")
+                self._thread_error = exc
 
 
 def make_xmpp_client(connection_info: LoginConfig):
