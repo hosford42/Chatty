@@ -15,20 +15,15 @@
     * Message history
     * Delivery status of a signal
 * Signal types:
-    * Message **WIP**
-        * Text
-        * MIME
-        * User mentions
-        * Hash tags
-        * Other content types
+    * Message **DONE**
+    * Delivery failure **DONE**
     * Arrival/departure
     * Status change
     * Started/stopped typing notification
-    * Delivery failure
     * Delivery receipt
     * Ping/keep alive
 * Session types:
-    * Direct user-to-bot
+    * Direct user-to-bot **DONE**
     * Direct bot-to-bot  **DONE** (needs tests)
     * IMAP/smtp email (imaplib/smtplib, builtin) **DONE**
     * Slack ([slackclient](https://github.com/slackapi/python-slackclient), MIT) **DONE**
