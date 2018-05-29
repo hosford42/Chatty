@@ -7,16 +7,21 @@
 
 Chatty is a Python 3 package designed to map any chat platform to the same
 standardized interface. The goal is to allow a chat bot to be remapped 
-from one platform or protocol to another, or even to multiple platforms
-at the same time, with nothing more than a change to a configuration file.
+from one platform to another, or even to multiple platforms at the same time, 
+with nothing more than a minor change in configuration.
 
 
-## Current Development Status
+Chatty is organized around 3 core abstractions:
 
-Chatty is brand new, and has currently only been tested for basic message
-delivery using email (imap & smtp, but not pop3 yet), xmpp, and Slack. See 
-the [TODO list] for a list of other platforms that will (hopefully) 
-eventually be supported.
+* **Signals**: A signal is any single indivisible element of communication,
+  such as a message or a notification, which may or may not contain
+  content or data of some sort. Signals always come with certain attached
+  *metadata* which indicates where the signal originated, who it was
+  sent to, when it was sent, etc.
+* **Bots**: A bot is an endpoint where inbound signals are handled, and
+  outbound signals are generated.
+* **Sessions**: A session is an open channel over which signals can be
+  sent and/or received by a bot.
 
 
 ## Usage
@@ -51,6 +56,13 @@ session.close()  # Drop offline
 ```
 
 
+## Current Development Status
+
+Chatty is brand new, and has currently only been tested for basic messaging
+via email (imap & smtp), xmpp, and Slack. See the [TODO list] for a list of 
+other platforms that should eventually be supported.
+
+
 ## Contributing
 
 If you have a need for a specific platform or protocol to be supported,
@@ -65,28 +77,8 @@ name of the module being tested.
 Submitted code should adhere to [pep8 guidelines] and should, in general,
 follow the conventions established elsewhere in the Chatty code base. For 
 the sake of clarity, please note that by submitting a pull request, you 
-agree, as per standard practice, and also the [GitHub terms of service] to 
-make your code available under the [license] governing this project.
-
-
-## Design
-
-The design of Chatty is object-oriented, and centers around 3 core 
-abstractions:
-
-* **Signals**: A signal is any single indivisible element of communication,
-  such as a message or a notification, which may or may not contain
-  content or data of some sort. Signals always come with certain attached
-  *metadata* which determines where the signal originated, who it was
-  sent to, when it was sent, etc.
-* **Bots**: A bot is an endpoint where inbound signals are handled, and
-  outbound signals are generated.
-* **Sessions**: A session is an open channel over which signals can be
-  sent and/or received.
-
-By default, signals arrive and are sent asynchronously. The 
-`SynchronizedBot` wrapper can be used to ensure receipt and sending
-of signals is fully synchronized from the perspective of the bot.
+agree, as per standard practice (and also the [GitHub terms of service]) 
+to make your code available under the [license] governing this project.
 
 
 [chatty/sessions]: https://github.com/hosford42/Chatty/tree/master/chatty/sessions
