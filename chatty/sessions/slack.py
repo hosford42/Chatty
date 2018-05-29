@@ -47,7 +47,7 @@ class SlackSession(Session):
         self._outbound_queue = deque()
         self._rate_limit = rate_limit
 
-        self._slack_thread = threading.Thread(target=self._slack_thread_main)
+        self._slack_thread = threading.Thread(target=self._slack_thread_main, daemon=True)
         self._alive = True
         self._slack_thread.start()
         self._check_for_thread_errors()
