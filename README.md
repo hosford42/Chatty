@@ -28,31 +28,35 @@ Chatty is organized around 3 core abstractions:
 
 ```python
 from chatty.bots.standard import make_bot
+from chatty.configuration import get_config
 from chatty.sessions.slack import SlackSession
 from chatty.signals.message import Message
 from chatty.signals.metadata import SignalMetaData
-from chatty.types import Handle, Password
 
 
-SLACK_BOT_TOKEN = Password('Your Slack bot token goes here...')
-BOT_HANDLE = Handle('Your Slack bot user name goes here...')
+# FRIENDLY REMINDER: Never store bot tokens or login passwords in your source
+# code, and be careful that they aren't in a place where they could get picked 
+# up by source control!
+
+# Load the bot's handle and login token from the config file.
+handle, token = get_config('Slack', '~/.chatty_config', ['handle'], ['token'])
 
 
 def converse(session, signal):
     """Say 'hi!' back on the same channel whenever someone says 'hello'"""
     if isinstance(signal, Message) and 'hello' in str(signal.content).lower():
         meta_data = SignalMetaData(
-            origin=BOT_HANDLE,
+            origin=handle,
             addressees=[signal.meta_data.room or signal.meta_data.origin],
             response_to=signal.meta_data.identifier
         )
         return Message(meta_data, 'hi!')
 
 
-session = SlackSession(SLACK_BOT_TOKEN)  # Create a new Slack session
+session = SlackSession(token)        # Create a new Slack session
 session.add_bot(make_bot(converse))  # Connect our bot to it
-session.join(timeout=5 * 60)  # Hang out for 5 minutes
-session.close()  # Drop offline
+session.join(timeout=5 * 60)         # Hang out for 5 minutes
+session.close()                      # Drop offline
 ```
 
 
@@ -78,7 +82,8 @@ Submitted code should adhere to [pep8 guidelines] and should, in general,
 follow the conventions established elsewhere in the Chatty code base. For 
 the sake of clarity, please note that by submitting a pull request, you 
 agree, as per standard practice (and also the [GitHub terms of service]) 
-to make your code available under the [license] governing this project.
+to make your code available under the same [license] that governs this 
+project.
 
 
 [chatty/sessions]: https://github.com/hosford42/Chatty/tree/master/chatty/sessions
