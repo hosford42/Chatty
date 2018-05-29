@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Iterable
+from typing import Callable, Optional, Iterable, Type
 import logging
 
 from chatty.bots.interface import Bot
@@ -23,7 +23,8 @@ class StandardBot(Bot):
         return iter(self._handlers)
 
     def add_handler(self, handler: Callable[[Session, Signal], None]):
-        self._handlers.append(handler)
+        if handler not in self._handlers:
+            self._handlers.append(handler)
 
     def remove_handler(self, handler: Callable[[Session, Signal], None]):
         if handler in self._handlers:
@@ -38,17 +39,22 @@ class StandardBot(Bot):
                 LOGGER.exception("Unhandled error in signal handler.")
 
 
-def make_bot(converser: Callable[[Session, Signal], Optional[Signal]], synchronized: bool = False) -> Bot:
-    def handler(sess: Session, sig: Signal) -> None:
+def make_bot(converser: Callable[[Session, Signal], Optional[Signal]], synchronized: bool = False,
+             bot_type: Type[StandardBot] = None) -> StandardBot:
+    if bot_type is None:
+        bot_type = StandardBot
+
+    def handler(session: Session, signal: Signal) -> None:
         # noinspection PyBroadException
         try:
-            response = converser(sess, sig)
+            response = converser(session, signal)
         except Exception:
             LOGGER.exception("Unhandled error in converser function.")
         else:
             if response is not None:
-                sess.send(response)
-    bot = StandardBot(handler)
+                session.send(response)
+
+    bot = bot_type(handler)
     if synchronized:
         bot = SynchronizedBot(bot)
     return bot
