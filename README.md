@@ -55,7 +55,7 @@ def converse(session, signal):
 
 
 session = SlackSession(token)        # Create a new Slack session
-session.add_bot(converse)  # Connect our bot to it
+session.add_bot(converse)            # Connect our bot to it
 session.join(timeout=5 * 60)         # Hang out for 5 minutes
 session.close()                      # Drop offline
 ```
