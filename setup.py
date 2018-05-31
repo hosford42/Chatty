@@ -16,7 +16,7 @@ def get_long_description():
 # noinspection SpellCheckingInspection
 setup(
     name='Chatty',
-    version='0.1.3',
+    version='0.2',
     packages=find_packages(),
     url='https://github.com/hosford42/Chatty',
     download_url='https://pypi.org/project/Chatty',
