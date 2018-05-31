@@ -1,7 +1,6 @@
 import datetime
 import logging
 import threading
-from collections import OrderedDict
 
 import tzlocal
 
@@ -9,42 +8,17 @@ import tzlocal
 #   * http://sleekxmpp.com/getting_started/muc.html
 #   * http://sleekxmpp.com/getting_started/echobot.html
 #   * https://github.com/fritzy/SleekXMPP/wiki/Stanzas:-Message
-from sleekxmpp import ClientXMPP, JID
+from sleekxmpp import ClientXMPP
 
 from chatty.exceptions import OperationNotSupported
 from chatty.sessions.interface import Session
 from chatty.signals.interface import Signal
 from chatty.signals.message import Message
 from chatty.signals.metadata import SignalMetaData
-from chatty.types import LoginConfig, Handle, SignalID
+from chatty.signals.status_change import StatusChange
+from chatty.types import LoginConfig, Handle, SignalID, StatusTypes, PresenceStatusValues, TypingStatusValues
 
 LOGGER = logging.getLogger(__name__)
-
-
-def search_nested_dict(root, keys):
-    assert isinstance(root, (dict, OrderedDict))
-
-    # Search for direct entries, in the order they appear in keys.
-    for key in keys:
-        if key not in root:
-            continue
-        nested = root[key]
-        if isinstance(nested, str):
-            LOGGER.debug("Found %s: %s", key, nested)
-            yield (key,), nested
-        elif isinstance(nested, JID):
-            LOGGER.debug("Found %s: %s", key, nested)
-            yield (key,), str(nested.bare)
-
-    # Search for nested entries, in the order they appear in keys.
-    for key in keys:
-        if key not in root:
-            continue
-        nested = root[key]
-        if isinstance(nested, (dict, OrderedDict)):
-            LOGGER.debug("Searching %s: %s", key, nested)
-            for path, value in search_nested_dict(nested, keys):
-                yield (key,) + path, value
 
 
 class XMPPSession(Session):
@@ -69,6 +43,13 @@ class XMPPSession(Session):
         self._xmpp_client.add_event_handler("groupchat_message", self.on_group_chat_message)
         self._xmpp_client.add_event_handler("failed_auth", self.on_failed_authentication)
         self._xmpp_client.add_event_handler("error", self.on_error)
+
+        # See https://xmpp.org/extensions/xep-0085.html#definitions
+        self._xmpp_client.add_event_handler("chatstate_active", self.on_chatstate_active)
+        self._xmpp_client.add_event_handler("chatstate_composing", self.on_chatstate_composing)
+        self._xmpp_client.add_event_handler("chatstate_gone", self.on_chatstate_gone)
+        self._xmpp_client.add_event_handler("chatstate_inactive", self.on_chatstate_inactive)
+        self._xmpp_client.add_event_handler("chatstate_paused", self.on_chatstate_paused)
 
         self._main_thread = threading.current_thread()
         self._thread_error = None
@@ -99,6 +80,8 @@ class XMPPSession(Session):
         self._process_thread.join(timeout)
 
     def send(self, signal: Signal) -> None:
+        # TODO: Handle outbound presence & typing status changes.
+
         if not isinstance(signal, Message):
             raise TypeError(signal)
         assert isinstance(signal, Message)
@@ -135,27 +118,44 @@ class XMPPSession(Session):
             LOGGER.exception("Error in on_session_started()")
             self._notify_thread_error(exc)
 
+    @staticmethod
+    def _get_meta_data(event):
+        origin = Handle(event['from'].bare)
+        visible_to = [origin]
+
+        if event.get('to', None):
+            addressees = [Handle(event['to'].bare)]
+            visible_to.extend(addressees)
+        else:
+            addressees = None
+
+        if event.get('room', None):
+            room = Handle(event['room'].bare)
+            # TODO: Add everyone in the room to visible_to
+        else:
+            room = None
+
+        return SignalMetaData(
+            identifier=SignalID(event['id']),
+            origin=origin,
+            addressees=addressees,
+            visible_to=visible_to,
+            response_to=None,
+            sent_at=None,
+            received_at=datetime.datetime.now(),
+            room=room
+        )
+
     def on_message(self, message):
         try:
             LOGGER.info("Message received.")
-
-            origin = message['from'].bare
 
             # Only handle regular chat messages
             if message['type'] not in ('chat', 'normal'):
                 LOGGER.debug("Ignoring non-chat message.")
                 return
 
-            meta_data = SignalMetaData(
-                identifier=SignalID(message['id']),
-                origin=Handle(origin),
-                addressees=[Handle(self._xmpp_connection_info.handle_configs[0].handle)],
-                visible_to=[Handle(origin), Handle(self._xmpp_connection_info.handle_configs[0].handle)],
-                response_to=None,
-                sent_at=None,
-                received_at=datetime.datetime.now(),
-                room=None
-            )
+            meta_data = self._get_meta_data(message)
             message = Message(meta_data, message['body'])
             self.receive(message)
         except Exception as exc:
@@ -166,43 +166,12 @@ class XMPPSession(Session):
         try:
             LOGGER.info("Group-chat message received.")
 
-            origin = Handle(message['from'].bare)
-
-            nicks = [
-                value
-                for path, value
-                in search_nested_dict(message.values, ['nick', 'mucnick'])
-            ]
-
-            # If the bot said it, it shouldn't respond to it.
-            if self._xmpp_connection_info.nickname in nicks or self._xmpp_connection_info.handle == origin:
-                LOGGER.debug("Ignoring self-generated message.")
-                return
-
             # Only handle group chat messages
             if message['type'] != 'groupchat':
                 LOGGER.debug("Ignoring non-groupchat message.")
                 return
 
-            # TODO: This is just a guess. I have no idea how to actually get the room. Test it!
-            LOGGER.debug(message)
-            room = Handle(message['room'])
-
-            if message.get('to', None):
-                addressees = [Handle(message['to'].bare)]
-            else:
-                addressees = None
-
-            meta_data = SignalMetaData(
-                identifier=SignalID(message['id']),
-                origin=origin,
-                addressees=addressees,
-                visible_to=[origin, Handle(self._xmpp_connection_info.handle)],
-                response_to=None,
-                sent_at=None,
-                received_at=datetime.datetime.now(),
-                room=room
-            )
+            meta_data = self._get_meta_data(message)
             message = Message(meta_data, message['body'])
             self.receive(message)
         except Exception as exc:
@@ -222,6 +191,56 @@ class XMPPSession(Session):
     def on_error(self, event):
         LOGGER.error("XMPP error event: %s" % event)
 
+    def on_chatstate_active(self, event):
+        try:
+            LOGGER.info("Presence=present message received.")
+            meta_data = self._get_meta_data(event)
+            signal = StatusChange(meta_data, StatusTypes.PRESENCE, PresenceStatusValues.PRESENT)
+            self.receive(signal)
+        except Exception as exc:
+            LOGGER.exception("Error in on_chatstate_active()")
+            self._notify_thread_error(exc)
+
+    def on_chatstate_inactive(self, event):
+        try:
+            LOGGER.info("Presence=inactive message received.")
+            meta_data = self._get_meta_data(event)
+            signal = StatusChange(meta_data, StatusTypes.PRESENCE, PresenceStatusValues.INACTIVE)
+            self.receive(signal)
+        except Exception as exc:
+            LOGGER.exception("Error in on_chatstate_inactive()")
+            self._notify_thread_error(exc)
+
+    def on_chatstate_gone(self, event):
+        try:
+            LOGGER.info("Presence=away message received.")
+            meta_data = self._get_meta_data(event)
+            signal = StatusChange(meta_data, StatusTypes.PRESENCE, PresenceStatusValues.AWAY)
+            self.receive(signal)
+        except Exception as exc:
+            LOGGER.exception("Error in on_chatstate_gone()")
+            self._notify_thread_error(exc)
+
+    def on_chatstate_composing(self, event):
+        try:
+            LOGGER.info("Typing=started message received.")
+            meta_data = self._get_meta_data(event)
+            signal = StatusChange(meta_data, StatusTypes.TYPING, TypingStatusValues.STARTED)
+            self.receive(signal)
+        except Exception as exc:
+            LOGGER.exception("Error in on_chatstate_composing()")
+            self._notify_thread_error(exc)
+
+    def on_chatstate_paused(self, event):
+        try:
+            LOGGER.info("Typing=stopped message received.")
+            meta_data = self._get_meta_data(event)
+            signal = StatusChange(meta_data, StatusTypes.TYPING, TypingStatusValues.STOPPED)
+            self.receive(signal)
+        except Exception as exc:
+            LOGGER.exception("Error in on_chatstate_paused()")
+            self._notify_thread_error(exc)
+
     def _process_main(self):
         while self._alive:
             try:
@@ -238,8 +257,11 @@ class XMPPSession(Session):
 def make_xmpp_client(connection_info: LoginConfig):
     client = ClientXMPP('%s@%s' % (connection_info.user, connection_info.host), connection_info.password)
     client.use_signals()
+
+    # TODO: Make sure all events are handled, and check if we should support other XEPs.
     client.register_plugin('xep_0030')  # Service Discovery
     client.register_plugin('xep_0045')  # Multi-User Chat
+    client.register_plugin('xep_0085')  # Chat State Notifications
     client.register_plugin('xep_0199')  # XMPP Ping
 
     # TODO: Use XEP 0079 to add delivery failure notifications once the sleekxmpp plugin for this XEP is released.

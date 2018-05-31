@@ -1,3 +1,6 @@
+# TODO: The chat window should (optionally, depending on configuration) support every signal type supported by other
+#       session types. It's main use is for debugging, and that's of limited value if any signals aren't supported.
+
 import datetime
 import logging
 import time

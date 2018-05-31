@@ -20,11 +20,10 @@
 * Signal types:
     * Message **DONE**
     * Delivery failure **DONE**
-    * Arrival/departure
+    * Presence change **DONE**
+    * Started/stopped typing notification **DONE**
     * Status change
-    * Started/stopped typing notification
     * Delivery receipt
-    * Ping/keep alive
 * Session types:
     * Direct user-to-bot **DONE**
     * Direct bot-to-bot  **DONE** (needs tests)

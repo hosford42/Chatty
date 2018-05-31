@@ -31,3 +31,19 @@ LoginConfig = NamedTuple(
      ('password', Password),
      ('handle_configs', Tuple[HandleConfig, ...])]
 )
+
+
+class StatusTypes:
+    PRESENCE = StatusType('PRESENCE')
+    TYPING = StatusType('TYPING')
+
+
+class PresenceStatusValues:
+    PRESENT = StatusValue('PRESENT')
+    AWAY = StatusValue('AWAY')
+    INACTIVE = StatusValue('INACTIVE')
+
+
+class TypingStatusValues:
+    STARTED = StatusValue('STARTED')
+    STOPPED = StatusValue('STOPPED')
